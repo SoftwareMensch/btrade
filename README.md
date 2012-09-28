@@ -22,3 +22,5 @@ einfach über alles geht. Aus diesem Grund bitte ich auch um finanzielle
 Unterstützung in Form von Bitcoins. Jeh mehr Spenden ich einnehme,
 desto mehr Zeit kann ich in die Entwicklung dieses Tools und anderen
 Bitcoinprojekten stecken.
+
+Genauere Details sind der Datei LIESMICH.txt zu entnehmen.
