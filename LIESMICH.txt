@@ -1,0 +1,68 @@
+****************************************************************************
+ btrade - (C) 2012 by Romano Kleinwächter <romano.kleinwaechter@gmail.com>
+
+ Um meine Arbeit für das Bitcoinnetzwerk zu unterstützen bitte ich um
+ Spenden an diese Adresse: 1M2kiTW1Bc2NDrpkRk7TZqU5C8cLx2wjvR
+****************************************************************************
+
+
+ÜBER
+	Bitcointrade, kurz btrade soll das Handeln mit Bitcoins vereinfachen und
+	eine bessere Einschätzung des Marktes gewährleisten, indem es in der
+	Lage ist gewisse Daten abzurufen und diese ausgewertet zur Verfügung
+	zu stellen.
+
+	Diese Version ist eine recht frühe, welche sich dennoch dank den Daten
+	von www.bitcoinmonitor.com wunderbar verwenden lässt. Ich nutze es
+	täglich um einzuschätzen wann ich kaufe bzw. verkaufe.
+
+	Lizensiert ist der Code unter der GPLv2, eine Kopie dieser Lizens liegt
+	sowohl in der englischen Originalsprache sowie in deutscher Übersetzung
+	vor. Eine rechtliche Grundlage bildet jedoch nur das englische Original.
+
+	Ich würde mich sehr freuen wenn sich andere Programmierer und Bitcoinfans
+	an diesem Tool beteiligen, denn ein paar Dinge möchte ich in der Zukunft
+	noch implementieren.  Da ich berufstätig bin habe ich dafür nur am
+	Wochenende Zeit und auch nur dann, wenn es meine Familie zu lässt, die
+	einfach über alles geht. Aus diesem Grund bitte ich auch um finanzielle
+	Unterstützung in Form von Bitcoins. Jeh mehr Spenden ich einnehme,
+	desto mehr Zeit kann ich in die Entwicklung dieses Tools und anderen
+	Bitcoinprojekten stecken.
+
+TODO
+	Dinge die ich als TODO bezeichne wären folgende: Ein modulares
+	Interface um Objektcode dynamisch zu laden, so dass sich einfach neue
+	Module entwickeln lassen die während der Laufzeit eingebunden werden
+	können. Desweiteren eine komplette Unterstützung der Mt.Gox API,
+	wobei ich noch unschlüssig bin dies auf HTTP Request zu belassen oder
+	Websockets zu benutzen. Als vorerst letzen Punkt ein ncurses UI welches
+	sich intuitiv bedienen lässt, wo btrade in konfigurierbaren Intervallen
+	Daten abruft und anzeigt.
+
+	Allerdings mache ich mir mit der Entwicklung keinen Stress, so wie ich
+	Zeit und Lust habe werden ein paar Zeilen Code geschrieben.
+
+BUILD
+	Da es noch keine Konfigurationsskripte gibt erkläre ich hier wie man
+	btrade kompiliert.  Folgende Bibliotheken werden benötigt: libcurl,
+	libssl (openssl-devel) und die json-c, bei der json-c ist zu beachten das
+	es eine Version der Bibliothek von http://www.json.org ist.  unter Fedora
+	bzw. CentOS sollte das kein Problem sein, allerdings habe ich unter allen
+	getesteten Ubuntusystemen festgestellt das die libjson nicht korrekt
+	funktioniert, die Timestamps werden falsch gelesen und man erhält bei der
+	Ausgabe der Daten völlig falsche Zeitangaben. Am besten die json-c via
+	git ziehen und selbst bauen. Unter Ubuntu muss mann evtl via gcc das Flag
+	"-Wl,--rpath=/usr/local/lib" ergänzen damit beim kompilieren auch die
+	selbst gebaute json-c benutzt wird. Eine auskommentierte Zeile die das
+	erledigt ist im build_btrade.sh Eskript eingebaut. Macht man dies nicht
+	würde der gcc wieder die libjson aus dem Ubuntusystem benutzen. Prüfen
+	kann man dies nach dem kompilieren mit "ldd", siehe "man ldd".
+
+	Das rudimentäre Buildskript (built_btrade.sh) liegt bei und muss
+	ggf. angepasst werden.  Das kompilierte Binary (btrade) solltet Ihr
+	dann am besten nach /usr/local/bin kopieren.  Damit seid Ihr fertig,
+	nun einfach btrade aufrufen und der Rest erklärt sich selbst.
+
+SCHLUSSWORT
+	Über Feedback, Spenden und Anregungen freue ich mich natürlich!
+
