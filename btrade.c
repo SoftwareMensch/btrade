@@ -218,6 +218,115 @@ void* base64_decode(char *data, size_t *len)
 }
 
 /**
+ * Ermittelt den kleinesten Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Kleinste Zahl im Array
+ */
+curr_t find_min(curr_t *list, size_t len)
+{
+	curr_t val = 0.0; // Rückgabewert
+	for(size_t i=0; i<len; ++i) if(list[i]<val || val==0.0) val = list[i]; // Sortieren
+	return val; // Rückgabe
+}
+
+/**
+ * Ermittelt den durchschnittlichen Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Durchschnittswert
+ */
+curr_t find_avg(curr_t *list, size_t len)
+{
+	curr_t val = 0.0; // Rückgabewert
+	for(size_t i=0; i<len; ++i) val += list[i]; // Summieren
+	return (val/len); // Rückgabe 
+}
+
+/**
+ * Ermittelt den größten Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Größte Zahl im Array
+ */
+curr_t find_max(curr_t *list, size_t len)
+{
+	curr_t val = 0.0; // Rückgabewert
+	for(size_t i=0; i<len; ++i) if(list[i]>val || val==0.0) val = list[i]; // Sortieren
+	return val; // Rückgabe
+}
+
+/**
+ * Ermittelt den am häufigsten, kleinsten gehandelten Kurs
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @param[out] proz Prozentualer Anteil
+ * @return Den am häufigsten gehandelten Kurs
+ */
+curr_t find_most_min_rate(curr_t *list, size_t len, float *proz)
+{
+	curr_t val = 0.0; // Rückgabewert
+	size_t max_pos = 0; // Position mit höchstem Wert
+	size_t count[len]; // Feld zum zählen der Zahlen
+
+	// Zähler initialisieren
+	for(size_t i=0; i<len; ++i) count[i] = 0;
+
+	// Zahlen durchlaufen und gucken wie oft sie auftauchen
+	for(size_t i=0; i<len; ++i)
+	{
+		// Auf aktuelle Zahl zeigen
+		curr_t *p = &list[i];
+		// Vergleichen
+		for(size_t j=0; j<len; ++j) if(list[j]==*p) ++count[i];
+	}
+
+	// Den größten Zähler und damit den häufigsten Kurs feststellen
+	for(size_t i=0, max=0; i<len; ++i)
+	{
+		if(count[i]>max || max==0)
+		{
+			max = count[i];
+			max_pos = i;
+		}
+	}
+	// Den vorerst häufigsten Wert ünbernehmen
+	val = list[max_pos];
+
+	// Es kann sein das auch andere Werte die gleich Anzahl haben,
+	// danach suchen wir nun, finden wir so einen Wert wird er mit
+	// dem letzten Wert verglichen, ist er kleiner wird er ersetzt.
+	int new_max_pos = -1;
+	for(size_t i=0; i<len; ++i)
+	{
+		// Treffer, es wurde ein weiterer Wert gefunden der genauso oft
+		// vor kommt wie der den wir schon hatten.
+		if((count[i]==count[max_pos]) && (i!=max_pos))
+		{
+			// Größen vergleichen, der kleinere gewinnt.
+			if(list[i]<val)
+			{
+				val = list[i];
+				new_max_pos = i;
+			}
+		}
+	}
+	// Ggf. neue max_pos übernehmen
+	if(new_max_pos != -1) max_pos = (size_t)new_max_pos;
+
+	// Häufigsten Wert und dessen Anteil endgültig übernehmen
+	val = list[max_pos];
+	*proz = ((count[max_pos]*100)/len);
+
+	// Rückgabe
+	return val;
+}
+
+/**
  * Fatale Fehler die eine sofortige Beendigung des Programms zur Folge haben.
  *
  * @param[in] msg Nachricht die auf stderr ausgegeben wird

@@ -26,7 +26,7 @@
 #ifndef _BTRADE_H
 #define _BTRADE_H
 
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 /** ********** RETURNCODES ********** */
 #define RET_PARAM_ERROR -6
@@ -66,6 +66,43 @@ typedef unsigned short int us_int;
  * @return void
  */
 void usage();
+
+/**
+ * Ermittelt den kleinesten Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Kleinste Zahl im Array
+ */
+curr_t find_min(curr_t *list, size_t len);
+
+/**
+ * Ermittelt den durchschnittlichen Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Durchschnittswert
+ */
+curr_t find_avg(curr_t *list, size_t len);
+
+/**
+ * Ermittelt den größten Währungswert in einem Array
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @return Größte Zahl im Array
+ */
+curr_t find_max(curr_t *list, size_t len);
+
+/**
+ * Ermittelt den am häufigsten, kleinsten gehandelten Kurs
+ *
+ * @param[in] list Zeiger auf Array
+ * @param[in] len Länge des Feldes
+ * @param[out] proz Prozentualer Anteil
+ * @return Den am häufigsten gehandelten Kurs
+ */
+curr_t find_most_min_rate(curr_t *list, size_t len, float *proz);
 
 /**
  * Gibt Daten als Base64 kodierten String zurück

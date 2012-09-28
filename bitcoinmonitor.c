@@ -320,8 +320,8 @@ void print_data(struct trade **tr, size_t len, char *iso)
 
 	// Daten für die Zusammenfassung
 	size_t count = 0;
-	curr_t sum_rate = 0.0;
 	curr_t sum_amount = 0.0;
+	curr_t rates[len];
 
 	// Zeiger für Tradings
 	struct trade *start_trade = NULL;
@@ -333,7 +333,7 @@ void print_data(struct trade **tr, size_t len, char *iso)
 		"\n%-11s %-20s %-18s %22s %22s\n%s\n",
 		"Position", "Exchanger", "Datum/Uhrzeit", "Bitcoins", "Währung",
 		"-------------------------------------------------------------------------------------------------------------------"
-	);
+	);	
 
 	// Daten iterieren und formatiert ausgeben.
 	for(size_t i=0; i<len; ++i)
@@ -344,6 +344,8 @@ void print_data(struct trade **tr, size_t len, char *iso)
 		// Währungsfilter
 		if(!strncmp(t->currency,iso,3))
 		{
+			// Kurs speichern
+			rates[count] = t->rate;
 			// Uhrzeit holen
 			struct tm *local_time = localtime(&t->ts);
 			// Formatierte Ausgabe der aktuellen Zeile
@@ -355,13 +357,21 @@ void print_data(struct trade **tr, size_t len, char *iso)
 				t->amount, t->rate, t->currency, (t->amount*t->rate), t->currency
 			);
 			// Summieren (für Zusammenfassung)
-			sum_rate += t->rate;
 			sum_amount += t->amount;
 			// Start- & Endtrades merken (zum eingrenzen des Zeitfensters)
 			if(count==1) start_trade = tr[i]; // Anfang
 			end_trade = tr[i]; // Ende
 		}
 	}
+
+	// Minimum, Durchschnitt und Maximum Kurs berechnen
+	curr_t min = find_min(rates, count);
+	curr_t avg = find_avg(rates, count);
+	curr_t max = find_max(rates, count);
+	
+	// Kurs der prozentual am häufigsten gehandelt wurde ermitteln
+	float most_rate_proz = 0.0; // Prozent
+	curr_t most_rate = find_most_min_rate(rates, count, &most_rate_proz);
 
 	// Zeitfenster für die ausgegebenen Trades ermitteln
 	time_t diff_sec = (end_trade->ts-start_trade->ts);
@@ -370,9 +380,19 @@ void print_data(struct trade **tr, size_t len, char *iso)
 	// Zusammenfassung formatiert ausgeben
 	printf
 	(
-		"\nETA %02u:%02u:%02u\t%f BTC\t%f %s (%f %s)\n",
+		"\nETA %02u:%02u:%02u        %f BTC <=> %f %s\n" // erste Zeile
+		"min, avg, max:      %f %s, %f %s, %f %s\n" // zweite Zeile
+		"am häufigsten:      %f %s (%.2f %%)\n", // dritte Zeile
+
+		// Daten für erste Zeile
 		diff_time->tm_hour-1, diff_time->tm_min, diff_time->tm_sec,
-		sum_amount, (sum_rate/count), iso, (sum_amount*(sum_rate/count)), iso
+		sum_amount, (sum_amount*avg), iso,
+
+		// Daten für zweite Zeile
+		min, iso, avg, iso, max, iso,
+
+		// Daten für dritte Zeile
+		most_rate, iso, most_rate_proz
 	);
 
 	// Rückkehr
