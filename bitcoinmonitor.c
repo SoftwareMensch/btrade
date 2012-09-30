@@ -34,12 +34,37 @@
 #include "bitcoinmonitor.h"
 /** ********** /INCLUDES ********* */
 
+
 /** ********** KONFIGURATION ********** */
 static const size_t DEFAULT_DATALEN = 10;
 static const char BM_DATA_URL[] = "http://www.bitcoinmonitor.com/data/-1";
 /** ********** /KONFIGURATION ********* */
 
+
 /** ********** FUNKTIONEN ********** */
+/**
+ * Einstiegspunkt für den Zugriff auf bitcoinmonitor.com
+ *
+ * @param[in] currency Zeiger auf die Währung die Verwendet werden soll
+ * @return Exitcode
+ */
+int btm_main(char *currency)
+{
+	// Variabeln
+	size_t max_row = 0;
+	struct trade **tmatrix;
+
+	// Daten parsen & ausgeben
+	tmatrix = parse_data(&max_row);
+	print_data(tmatrix, max_row, currency);
+
+	// Heap aufräumen
+	free_matrix_data(tmatrix, max_row);
+
+	// alles gut
+	return RET_OK;
+}
+
 /**
  * Empfangene JSON Daten von bitcoinmonitor.com parsen.
  *

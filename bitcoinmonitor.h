@@ -32,6 +32,7 @@
 #include <time.h>
 /** ********** /INCLUDES ********* */
 
+
 /** ********** STRUKTUREN ********** */
 /**
  * Trading Daten
@@ -63,6 +64,16 @@ struct data
 	size_t size;
 };
 /** ********** /STRUKTUREN ********* */
+
+
+/** ********** PROTOTYPEN ********** */
+/**
+ * Einstiegspunkt für den Zugriff auf bitcoinmonitor.com
+ *
+ * @param[in] currency Zeiger auf die Währung die Verwendet werden soll
+ * @return Exitcode
+ */
+int btm_main(char *currency);
 
 /**
  * Empfangene JSON Daten von bitcoinmonitor.com parsen.
@@ -125,5 +136,6 @@ void print_data(struct trade **tr, size_t len, char *iso);
  * @return void
  */
 void free_matrix_data(struct trade **t, size_t len);
+/** ********** /PROTOTYPEN ********* */
 
 #endif //_BITCOINMONITOR_H

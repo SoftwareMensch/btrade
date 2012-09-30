@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "btrade.h"
 #include "mtgox.h"
 #include "bitcoinmonitor.h"
@@ -41,35 +42,31 @@
  */
 int main(int argc, char **argv)
 {
-	// Flags prüfen
-	if(argc>=2)
+	// Optionen definieren
+	const char short_opts[] = "vb:";
+	const struct option long_opts[] =
 	{
-		// Versionsausgabe
-		if(!strncmp(argv[1],"--version",9))
-		{
-			printf("Version: %s\n", VERSION);
-			return RET_OK;
-		}
-		// Bitcoinmonitor
-		else if(!strncmp(argv[1],"--btm",5))
-		{
-			// --btm benötig Währung
-			if(argc==3)
-			{
-				// Daten von bitcoinmonitor.com holen und ausgeben
-				size_t max_row = 0;
-				struct trade **tmatrix = parse_data(&max_row);
-				print_data(tmatrix, max_row, argv[2]);
-				// Heap aufräumen & normales Ende mitteilen
-				free_matrix_data(tmatrix, max_row);
-				return RET_OK;
-			}
-		}
-	}	
+		{"version",	0, NULL, 'v'},
+		{"btm",		0, NULL, 'b'},
+		{NULL,		0, NULL, 0}
+	};
 
-	// Ungültige Option
-	usage();
-	return RET_USAGE;
+	// Durch Kommandozeile laufen
+	int next = 0;
+	do
+	{
+		// Auf Optionen reagieren
+		switch((next=getopt_long(argc, argv, short_opts, long_opts, NULL)))
+		{
+			case 'v':	printf("Version: %s\n", VERSION); return RET_OK; break;	// Version ausgeben
+			case 'b':	return btm_main(optarg); break;				// Daten von bitcoinmonitor.com abrufen
+			default:	usage(); return RET_USAGE; break;			// Hilfe ausgeben
+		}
+	}
+	while(next != -1);
+
+	// normales Ende
+	return RET_OK;
 }
 
 /** ********** FUNKTIONEN ********** */
@@ -98,8 +95,8 @@ void usage()
 		"\n",
 
 		// Beschreibungen
-		"--version", "Ausgabe der Programmversion", // Version
-		"--btm <EUR, USD, etc>", "Ausgewertete Daten von http://www.bitcoinmonitor.com anzeigen" // bitcoinmonitor.com
+		"-v | --version", "Ausgabe der Programmversion", // Version
+		"-b | --btm <EUR, USD, etc>", "Ausgewertete Daten von http://www.bitcoinmonitor.com anzeigen" // bitcoinmonitor.com
 	);
 
 	// Rücksprung
