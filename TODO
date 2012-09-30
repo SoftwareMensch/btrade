@@ -1,0 +1,7 @@
+Dinge die nach Priorität implementiert werden sollten
+=====================================================
+
+- Kommandozeilenarguente via getopt() (unistd.h) parsen
+- Rudimentäre Implementierung der Mt.Gox API via Websockets
+- Rudimentäre Implementierung eines ncurses UI's
+
