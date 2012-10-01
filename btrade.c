@@ -43,11 +43,12 @@
 int main(int argc, char **argv)
 {
 	// Optionen definieren
-	const char short_opts[] = "vb:";
+	const char short_opts[] = "vb:m:";
 	const struct option long_opts[] =
 	{
 		{"version",	0, NULL, 'v'},
 		{"btm",		0, NULL, 'b'},
+		{"mtgox",	0, NULL, 'm'},
 		{NULL,		0, NULL, 0}
 	};
 
@@ -60,6 +61,7 @@ int main(int argc, char **argv)
 		{
 			case 'v':	printf("Version: %s\n", VERSION); return RET_OK; break;	// Version ausgeben
 			case 'b':	return btm_main(optarg); break;				// Daten von bitcoinmonitor.com abrufen
+			case 'm':	return mtgox_main(optarg); break;			// Ausgabe des Mt.Gox Livestreams
 			default:	usage(); return RET_USAGE; break;			// Hilfe ausgeben
 		}
 	}
@@ -90,13 +92,15 @@ void usage()
 		"\n"
 		"Benutzung:\n"
 		"\n"
-		"\t%-25s %s\n" // Flags 1
-		"\t%-25s %s\n" // Flag 2
+		"\t%-30s %s\n" // Flags 1
+		"\t%-30s %s\n" // Flag 2
+		"\t%-30s %s\n" // Flag 3
 		"\n",
 
 		// Beschreibungen
 		"-v | --version", "Ausgabe der Programmversion", // Version
-		"-b | --btm <EUR, USD, etc>", "Ausgewertete Daten von http://www.bitcoinmonitor.com anzeigen" // bitcoinmonitor.com
+		"-b | --btm <EUR, USD, etc>", "Ausgewertete Daten von http://www.bitcoinmonitor.com anzeigen", // bitcoinmonitor.com
+		"-m | --mtgox <EUR, USD, etc>", "Ausgabe des Mt.Gox Livestreams" // Mt.Gox
 	);
 
 	// Rücksprung

@@ -29,8 +29,23 @@
 #include <string.h>
 #include "mtgox.h"
 #include "btrade.h"
+#include "websocket.h"
 /** ********** /INCLUDES ********* */
 
-/** ********** FUNKTIONEN ********** */
 
+/** ********** FUNKTIONEN ********** */
+/**
+ * Mainfunktion für den Mt.Gox Livestream Einsprung
+ *
+ * @param[in] currency Währung die Benutzt werden soll
+ * @return Exitcode
+ */
+int mtgox_main(char *currency)
+{
+	printf("Derzeit nicht implementiert.\n");
+
+	// alles gut
+	return RET_OK;
+}
 /** ********** /FUNKTIONEN ********* */
+

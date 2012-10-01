@@ -26,9 +26,10 @@
 #ifndef _BTRADE_H
 #define _BTRADE_H
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 
 /** ********** RETURNCODES ********** */
+#define RET_NETWORK_ERROR -7
 #define RET_PARAM_ERROR -6
 #define RET_OPENSSL_ERROR -5
 #define RET_ALOC_ERROR -4
@@ -57,6 +58,7 @@ typedef double curr_t;
 typedef short int s_int;
 typedef unsigned int u_int;
 typedef unsigned short int us_int;
+typedef unsigned long int ul_int;
 /** ********** /DATENTYPEN ********* */
 
 /** ********** PROTOTYPEN ********** */

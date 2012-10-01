@@ -27,6 +27,13 @@
 #define _MTGOX_H
 
 /** ********** PROTOTYPEN ********** */
+/**
+ * Mainfunktion für den Mt.Gox Livestream Einsprung
+ *
+ * @param[in] currency Währung die Benutzt werden soll
+ * @return Exitcode
+ */
+int mtgox_main(char *currency);
 /** ********** /PROTOTYPEN ********* */
 
 #endif //_MTGOX_H
