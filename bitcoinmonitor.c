@@ -52,14 +52,14 @@ int btm_main(char *currency)
 {
 	// Variabeln
 	size_t max_row = 0;
-	struct trade **tmatrix;
+	struct btm_trade **tmatrix;
 
 	// Daten parsen & ausgeben
-	tmatrix = parse_data(&max_row);
-	print_data(tmatrix, max_row, currency);
+	tmatrix = btm_parse_data(&max_row);
+	btm_print_data(tmatrix, max_row, currency);
 
 	// Heap aufräumen
-	free_matrix_data(tmatrix, max_row);
+	btm_free_matrix_data(tmatrix, max_row);
 
 	// alles gut
 	return RET_OK;
@@ -71,13 +71,13 @@ int btm_main(char *currency)
  * @param[in] len Länge der empfangenen Daten
  * @return Zeiger auf eine Liste von struct trade* (Handelsmatrix)
  */
-struct trade** parse_data(size_t *len)
+struct btm_trade** btm_parse_data(size_t *len)
 {
 	// Parameter testen
 	if(len==NULL) PARAM_FATAL(__FILE__, "parse_data()");
 
-	struct trade **ret = (struct trade**)calloc(DEFAULT_DATALEN, sizeof(struct trade)); // Speicher vorbereiten
-	char *jstr = fetch_data(); // JSON Daten holen
+	struct btm_trade **ret = (struct btm_trade**)calloc(DEFAULT_DATALEN, sizeof(struct btm_trade)); // Speicher vorbereiten
+	char *jstr = btm_fetch_data(); // JSON Daten holen
 	json_object *jobj = json_tokener_parse(jstr); // JSON parsen
 	free(jstr); jstr = NULL; // Den String brauchen wir nicht mehr
 	size_t count = 0; // Anzahl der Daten
@@ -180,8 +180,8 @@ struct trade** parse_data(size_t *len)
 					}
 
 					// Daten in eigene Struktur schreiben & ggf. den Speicher dafür reallokieren
-					if(count>=(DEFAULT_DATALEN-1)) ret = (struct trade**)realloc(ret, ((count+1)*sizeof(struct trade)));
-					ret[count] = new_trade(ts, amount, rate, curr_iso, exch);
+					if(count>=(DEFAULT_DATALEN-1)) ret = (struct btm_trade**)realloc(ret, ((count+1)*sizeof(struct btm_trade)));
+					ret[count] = btm_new_trade(ts, amount, rate, curr_iso, exch);
 					++count; // Datensatz mitzählen
 				}
 
@@ -210,14 +210,14 @@ struct trade** parse_data(size_t *len)
  * @param[in] exch Name des Exchangers
  * @return Zeiger auf neue Handelstruktur (struct trade*)
  */
-struct trade* new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char *exch)
+struct btm_trade* btm_new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char *exch)
 {
 	// Parameter testen
 	if(ts==0 || amount<0 || rate<0 || curr==NULL) PARAM_FATAL(__FILE__, "new_trade()");
 
 	// Speicher allokieren
-	struct trade *t = (struct trade*)malloc(sizeof(struct trade));
-	memset(t, 0x00, sizeof(struct trade));
+	struct btm_trade *t = (struct btm_trade*)malloc(sizeof(struct btm_trade));
+	memset(t, 0x00, sizeof(struct btm_trade));
 
 	// Daten übernehmen
 	t->ts = ts;
@@ -241,12 +241,12 @@ struct trade* new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char 
  *
  * @return Zeiger auf den Anfang der JSON Daten
  */
-char* fetch_data()
+char* btm_fetch_data()
 {
 	CURL *curl = NULL;
 	CURLcode res;
 	char *data = NULL;
-	struct data curl_data;
+	struct btm_data curl_data;
 
 	// Speicher allokieren
 	curl_data.buffer = (char*)malloc(1);
@@ -262,7 +262,7 @@ char* fetch_data()
 		exit(RET_CURL_ERROR);
 	}
 	// Wenn das geklappt hat geht auch das.
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, btm_write_data);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &curl_data);
 
 	// Request abschicken & Curl aufräumen
@@ -300,7 +300,7 @@ char* fetch_data()
  * @param[out] stream Zeiger auf unsere Daten die wir befüllen wollen
  * @return Länge der neu geschriebenen Daten
  */
-size_t write_data(char *ptr, size_t size, size_t nmemb, struct data *stream)
+size_t btm_write_data(char *ptr, size_t size, size_t nmemb, struct btm_data *stream)
 {
 	// Parameter testen
 	if(ptr==NULL || size<1 || nmemb<1 || stream==NULL) PARAM_FATAL(__FILE__, "write_data()");
@@ -322,7 +322,7 @@ size_t write_data(char *ptr, size_t size, size_t nmemb, struct data *stream)
  * @param[in[ iso ISO Währungscode nach dem gefiltert werden soll
  * @return void
  */
-void print_data(struct trade **tr, size_t len, char *iso)
+void btm_print_data(struct btm_trade **tr, size_t len, char *iso)
 {
 	// Parameter testen
 	if(tr==NULL || *tr==NULL || len<1 || iso==NULL) PARAM_FATAL(__FILE__, "print_data()");
@@ -349,8 +349,8 @@ void print_data(struct trade **tr, size_t len, char *iso)
 	curr_t rates[len];
 
 	// Zeiger für Tradings
-	struct trade *start_trade = NULL;
-	struct trade *end_trade = NULL;
+	struct btm_trade *start_trade = NULL;
+	struct btm_trade *end_trade = NULL;
 
 	// Überschrift
 	printf
@@ -364,7 +364,7 @@ void print_data(struct trade **tr, size_t len, char *iso)
 	for(size_t i=0; i<len; ++i)
 	{
 		// Zeiger auf aktuellen Datensatz
-		struct trade *t = tr[i];
+		struct btm_trade *t = tr[i];
 
 		// Währungsfilter
 		if(!strncmp(t->currency,iso,3))
@@ -431,7 +431,7 @@ void print_data(struct trade **tr, size_t len, char *iso)
  * @param[in] len Anzahl der Zeilen in der Matrix
  * @return void
  */
-void free_matrix_data(struct trade **t, size_t len)
+void btm_free_matrix_data(struct btm_trade **t, size_t len)
 {
 	// Parameter testen
 	if(t==NULL || *t==NULL || len<1) PARAM_FATAL(__FILE__, "free_matrix_data()");

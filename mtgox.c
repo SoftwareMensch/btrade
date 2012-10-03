@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include <json/json.h>
 #include "mtgox.h"
 #include "btrade.h"
 #include "websocket.h"
@@ -40,6 +42,13 @@ static int PORT = 80;
 static char MONITOR_RES[] = "mtgox";
 /** ********** /KONFIGURATION ********* */
 
+
+/** ********** MTGOX CHANNEL ********** */
+const static char CH_TICKER[]	= "d5f06780-30a8-4a48-a2f8-7ed181b4a13f";
+const static char CH_TRADE[] 	= "dbf1dee9-4f2e-4a08-8cb7-748919a71b21";
+const static char CH_DEPTH[]	= "24e67e0d-1cad-4cc0-9e7a-f8523ef460fe";
+/** ********** /MTGOX CHANNEL ********* */
+
 /** ********** FUNKTIONEN ********** */
 /**
  * Mainfunktion für den Mt.Gox Livestream Einsprung
@@ -47,10 +56,8 @@ static char MONITOR_RES[] = "mtgox";
  * @param[in] currency Währung die Benutzt werden soll
  * @return Exitcode
  */
-int mtgox_main(char *currency)
+int mtg_main(char *currency)
 {
-	printf("\n!! IN ARBEIT !!\n\n");
-
 	// Ressource mit Währung ergänzen
 	char res[strlen(MONITOR_RES)+strlen(currency)+10+1]; // 10="?Currency="
 	memset(&res, 0x00, sizeof(res));
@@ -60,37 +67,42 @@ int mtgox_main(char *currency)
 	// Socketfilediscriptor zurückgeben
 	int sock = websocket_open(HOST, res, PORT);
 
-	// Stream puffern bis ein gültiges JSON enstanden ist
-	// und dieses verarbeiten.
-	char *json=NULL; // Späterer Platz für JSON Daten
-	ssize_t cur_bytes=0, all_bytes=0;
-	while(1)
-	{
-		// Puffer (re)initialisieren
-		char buff[256];
-		memset(&buff, 0x00, 256);
+	// Daten parsen
+	mtg_parse_data(sock);
 
-		// Von Stream lesen und Daten merken
-		cur_bytes = read(sock, &buff, sizeof(buff));
-		if(cur_bytes>0)
-		{
-			// Ausstieg
-			if(all_bytes>=1024) break;
-
-			// Speicher dynamsich halten, kopieren & Bytes zählen
-			json = (char*)realloc(json, all_bytes+cur_bytes);
-			memcpy(json+all_bytes, buff, cur_bytes);
-			all_bytes += cur_bytes;
-		}
-	}
-
-	for(size_t i=0; i<all_bytes; ++i) printf("%c", json[i]);
-
-	free(json);
+	// Socket schließen
 	websocket_close(sock);
 
 	// alles gut
 	return RET_OK;
+}
+
+/**
+ * Daten von Stream lesen und parsen
+ *
+ * @param[in] fd Socketdateidiscriptor
+ * @return void
+ */
+void mtg_parse_data(int fd)
+{
+	// Verbdinung als Stream interpretieren
+	FILE *stream = fdopen(fd, "r");
+	if(stream==NULL) Fatal
+	(
+		strerror(errno),
+		RET_NETWORK_ERROR
+	);
+
+	// Erstmal alles ausgeben was ankommt
+	int c = 0;
+	while((c=fgetc(stream))!=EOF)
+	{
+		printf("%c", (char)c);
+	}
+
+	// Stream schließen & Rückkehr
+	fclose(stream);
+	return;
 }
 /** ********** /FUNKTIONEN ********* */
 

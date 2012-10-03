@@ -46,17 +46,12 @@ BUILD
 	Da es noch keine Konfigurationsskripte gibt erkläre ich hier wie man
 	btrade kompiliert.  Folgende Bibliotheken werden benötigt: libcurl,
 	libssl (openssl-devel) und die json-c, bei der json-c ist zu beachten das
-	es eine Version der Bibliothek von http://www.json.org ist.  unter Fedora
-	bzw. CentOS sollte das kein Problem sein, allerdings habe ich unter allen
-	getesteten Ubuntusystemen festgestellt das die libjson nicht korrekt
-	funktioniert, die Timestamps werden falsch gelesen und man erhält bei der
-	Ausgabe der Daten völlig falsche Zeitangaben. Am besten die json-c via
-	git ziehen und selbst bauen. Unter Ubuntu muss mann evtl via gcc das Flag
-	"-Wl,--rpath=/usr/local/lib" ergänzen damit beim kompilieren auch die
-	selbst gebaute json-c benutzt wird. Eine auskommentierte Zeile die das
-	erledigt ist im build_btrade.sh Eskript eingebaut. Macht man dies nicht
-	würde der gcc wieder die libjson aus dem Ubuntusystem benutzen. Prüfen
-	kann man dies nach dem kompilieren mit "ldd", siehe "man ldd".
+	es eine Version der Bibliothek von http://www.json.org ist.  Die libjson
+	aus den meisten Distributionen funktioniert irgendwie nicht korrekt,
+	die Timestamps werden falsch gelesen und man erhält bei der Ausgabe der
+	Daten völlig falsche Zeitangaben. Am besten die json-c via git ziehen
+	und selbst bauen. Ich habe in dem Buildskript die entsprechenden Flags
+	gesetzt damit ld gegen die libjson unter /usr/local/lib linkt.
 
 	Das rudimentäre Buildskript (built_btrade.sh) liegt bei und muss
 	ggf. angepasst werden.  Das kompilierte Binary (btrade) solltet Ihr

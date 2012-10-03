@@ -43,7 +43,7 @@
  * @param currency ISO Währungscode + Nullbyte
  * @param exchanger Name des Exchanger wo die Bitcoins gehandelt wurden
  */
-struct trade
+struct btm_trade
 {
 	time_t ts;
 	curr_t amount;
@@ -58,7 +58,7 @@ struct trade
  * @param buffer Unser Abbild der empfangenen Daten
  * @param size Größe unserer Abbilddaten
  */
-struct data
+struct btm_data
 {
 	char *buffer;
 	size_t size;
@@ -81,7 +81,7 @@ int btm_main(char *currency);
  * @param[in] len Länge der empfangenen Daten
  * @return Zeiger auf eine Liste von struct trade* (Handelsmatrix)
  */
-struct trade** parse_data(size_t *);
+struct btm_trade** btm_parse_data(size_t *);
 
 /**
  * Holt die zu verarbeitenden JSON Daten via libcurl vom bitcoinmonitor Server
@@ -91,7 +91,7 @@ struct trade** parse_data(size_t *);
  *
  * @return Zeiger auf den Anfang der JSON Daten
  */
-char* fetch_data();
+char* btm_fetch_data();
 
 /**
  * Callbackfunktion für die libcurl um die empfangenen JSON Daten
@@ -103,7 +103,7 @@ char* fetch_data();
  * @param[out] stream Zeiger auf unsere Daten die wir befüllen wollen
  * @return Länge der neu geschriebenen Daten
  */
-size_t write_data(char *ptr, size_t size, size_t nmemb, struct data *stream);
+size_t btm_write_data(char *ptr, size_t size, size_t nmemb, struct btm_data *stream);
 
 /**
  * Allokiert Speicher für ein neue Handelsstruktur und
@@ -116,7 +116,7 @@ size_t write_data(char *ptr, size_t size, size_t nmemb, struct data *stream);
  * @param[in] exch Name des Exchangers
  * @return Zeiger auf neue Handelstruktur (struct trade*)
  */
-struct trade* new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char *exch);
+struct btm_trade* btm_new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char *exch);
 
 /**
  * Formartierte und ausgewerte Ausgabe der Daten für die Konsole.
@@ -126,7 +126,7 @@ struct trade* new_trade(time_t ts, curr_t amount, curr_t rate, char *curr, char 
  * @param[in[ iso ISO Währungscode nach dem gefiltert werden soll
  * @return void
  */
-void print_data(struct trade **tr, size_t len, char *iso);
+void btm_print_data(struct btm_trade **tr, size_t len, char *iso);
 
 /**
  * Deallokiert alle Daten in unserer Handelsmatrix
@@ -135,7 +135,7 @@ void print_data(struct trade **tr, size_t len, char *iso);
  * @param[in] len Anzahl der Zeilen in der Matrix
  * @return void
  */
-void free_matrix_data(struct trade **t, size_t len);
+void btm_free_matrix_data(struct btm_trade **t, size_t len);
 /** ********** /PROTOTYPEN ********* */
 
 #endif //_BITCOINMONITOR_H

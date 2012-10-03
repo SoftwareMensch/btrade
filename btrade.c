@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 		{
 			case 'v':	printf("Version: %s\n", VERSION); return RET_OK; break;	// Version ausgeben
 			case 'b':	return btm_main(optarg); break;				// Daten von bitcoinmonitor.com abrufen
-			case 'm':	return mtgox_main(optarg); break;			// Ausgabe des Mt.Gox Livestreams
+			case 'm':	return mtg_main(optarg); break;				// Ausgabe des Mt.Gox Livestreams
 			default:	usage(); return RET_USAGE; break;			// Hilfe ausgeben
 		}
 	}
