@@ -155,8 +155,7 @@ char* base64_encode(void *data, size_t len)
 	);
 
 	// Speicher für Base64 String allokieren, resetten und befüllen
-	b64_str = (char*)malloc(praw->length);
-	memset(b64_str, 0x00, praw->length);
+	b64_str = (char*)calloc(1, praw->length);
 	memcpy(b64_str, praw->data, praw->length-1);
 	b64_str[praw->length-1] = 0x00; // Abschließendes Nullbyte gewährleisten
 
@@ -203,8 +202,7 @@ void* base64_decode(char *data, size_t *len)
 	);
 
 	// Speicher für dekodierte Daten allokieren & vorbereiten
-	dec_data = malloc(praw->length);
-	memset(dec_data, 0x00, praw->length);
+	dec_data = calloc(1, praw->length);
 	int ret = BIO_read(raw, dec_data, praw->length); // Daten dekodiert in den Speicher lesen
 	if(ret <= 0) Fatal // Fehler
 	(

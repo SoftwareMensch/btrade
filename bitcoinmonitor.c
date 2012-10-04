@@ -216,8 +216,7 @@ struct btm_trade* btm_new_trade(time_t ts, curr_t amount, curr_t rate, char *cur
 	if(ts==0 || amount<0 || rate<0 || curr==NULL) PARAM_FATAL(__FILE__, "new_trade()");
 
 	// Speicher allokieren
-	struct btm_trade *t = (struct btm_trade*)malloc(sizeof(struct btm_trade));
-	memset(t, 0x00, sizeof(struct btm_trade));
+	struct btm_trade *t = (struct btm_trade*)calloc(1, sizeof(struct btm_trade));
 
 	// Daten übernehmen
 	t->ts = ts;
@@ -249,8 +248,7 @@ char* btm_fetch_data()
 	struct btm_data curl_data;
 
 	// Speicher allokieren
-	curl_data.buffer = (char*)malloc(1);
-	memset(curl_data.buffer, 0x00, 1);
+	curl_data.buffer = (char*)calloc(1, 1);
 	curl_data.size = 0;
 
 	// Curl initialisieren & konfigurieren
@@ -278,8 +276,7 @@ char* btm_fetch_data()
 	curl = NULL;
 
 	// Platz auf dem Heap allokieren
-	data = (char*)malloc(curl_data.size);
-	memset(data, 0x00, curl_data.size);
+	data = (char*)calloc(1, curl_data.size);
 	memcpy(data, curl_data.buffer, curl_data.size);
 
 	// frei geben
