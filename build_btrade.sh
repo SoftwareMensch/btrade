@@ -7,7 +7,7 @@ $(pkg-config libssl --libs --cflags) \
 -ljson -Wl,--rpath=/usr/local/lib
 
 ### FÜR DEBUGGING AUSKOMMENTIEREN
-strip ./btrade
+#strip ./btrade
 
 # EOF
 

@@ -326,6 +326,36 @@ curr_t find_most_min_rate(curr_t *list, size_t len, float *proz)
 }
 
 /**
+ * Binäre Zeichenfolge in Daten suchen und eine Zeiger
+ * auf den Anfang dieser Daten zurück geben.
+ *
+ * @param[in] haystack Zeiger auf Daten
+ * @param[in] needle Zu suchende Zeichenfolge
+ * @param[in] len_haystack Länge der zu prüfenden Daten
+ * @param[in] len_needle Länge der zu suchenden Daten
+ * @return Offset vom Anfang oder -1 bei Fehler
+ */
+sl_int find_binary(char *haystack, char *needle, size_t len_haystack, size_t len_needle)
+{
+	// haystack muss min. so groß sein wie needle
+	if(len_haystack >= len_needle)
+	{
+		// haystack Iteration und Vergleich mit needle
+		for(size_t i=0; i<(len_haystack-len_needle); ++i)
+		{
+			// Startadresse gefunden
+			if(memcmp(needle,haystack+i,len_needle)==0)
+			{
+				return i;
+			}
+		}
+	}
+
+	// Kein Fund
+	return -1;
+}
+
+/**
  * Fatale Fehler die eine sofortige Beendigung des Programms zur Folge haben.
  *
  * @param[in] msg Nachricht die auf stderr ausgegeben wird

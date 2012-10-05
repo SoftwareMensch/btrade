@@ -22,7 +22,19 @@
 #ifndef _MTGOX_H
 #define _MTGOX_H
 
+/** ********** INCLUDES ********** */
 #include "btrade.h"
+/** ********** /INCLUDES ********* */
+
+
+/** ********** DEFINITIONEN ********** */
+typedef s_int mtg_t;
+#define MTG_TYPE_VALUE	0x00
+#define MTG_TYPE_TRADE	0x01
+#define MTG_TYPE_TICKER	0x02
+#define MTG_TYPE_DEPTH	0x03
+/** ********** /DEFINITIONEN ********* */
+
 
 /** ********** STRUKTUREN ********** */
 /**
@@ -166,6 +178,48 @@ int mtg_main(char *currency);
  * @return void
  */
 void mtg_parse_data(int fd);
+
+/**
+ * Blocktype ermitteln
+ *
+ * @param[in] block Zeiger auf Blockanfang
+ * @return Typidentifizierung für den Block oder -1 bei Fehler
+ */
+mtg_t mtg_get_block_type(char *block);
+
+/**
+ * Block lesen, Struktur ermitteln, Daten
+ * speichern und Typ zurückgeben.
+ *
+ * @param[in] block Blockstring (JSON)
+ * @param[in] Zeiger auf neue Datenstruktur
+ * @return Mt.Gox Typ des Blocks
+ */
+mtg_t mtg_read_block(char *block, void *data);
+
+/**
+ * Handelsblock lesen
+ *
+ * @param[in] block JSON Blockstring
+ * @param[in] data Zeiger für Datenstruktur
+ */
+void mtg_read_block_trade(char *block, void *data);
+
+/**
+ * Tickerblock lesen
+ *
+ * @param[in] block JSON Blockstring
+ * @param[in] data Zeiger für Datenstruktur
+ */
+void mtg_read_block_ticker(char *block, void *data);
+
+/**
+ * Depthblock lesen
+ *
+ * @param[in] block JSON Blockstring
+ * @param[in] data Zeiger für Datenstruktur
+ */
+void mtg_read_block_depth(char *block, void *data);
 /** ********** /PROTOTYPEN ********* */
 
 #endif //_MTGOX_H

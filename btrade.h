@@ -59,6 +59,7 @@ typedef short int s_int;
 typedef unsigned int u_int;
 typedef unsigned short int us_int;
 typedef unsigned long int ul_int;
+typedef signed long int sl_int;
 /** ********** /DATENTYPEN ********* */
 
 /** ********** PROTOTYPEN ********** */
@@ -123,6 +124,18 @@ char* base64_encode(void *data, size_t len);
  * @return Startadresse der Originaldaten
  */
 void* base64_decode(char *data, size_t *len);
+
+/**
+ * Binäre Zeichenfolge in Daten suchen und eine Zeiger
+ * auf den Anfang dieser Daten zurück geben.
+ *
+ * @param[in] haystack Zeiger auf Daten
+ * @param[in] needle Zu suchende Zeichenfolge
+ * @param[in] len_haystack Länge der zu prüfenden Daten
+ * @param[in] len_needle Länge der zu suchenden Daten
+ * @return Offset vom Anfang oder -1 bei Fehler
+ */
+sl_int find_binary(char *haystack, char *needle, size_t len_haystack, size_t len_needle);
 
 /**
  * Fatale Fehler die eine sofortige Beendigung des Programms zur Folge haben.
