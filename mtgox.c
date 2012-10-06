@@ -24,6 +24,7 @@
  */
 
 /** ********** INCLUDES ********** */
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +49,15 @@ static char BLOCK_END[] = { 0xFF, 0x00 };
 /** ********** /KONFIGURATION ********* */
 
 
+/** ********** THREAD VARIABELN ********** */
+static void *TH_DATA;
+static us_int TH_FIN;
+static mtg_t TH_DATA_TYPE;
+static pthread_cond_t TH_COND = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t TH_MUTEX = PTHREAD_MUTEX_INITIALIZER;
+/** ********** /THREAD VARIABELN ********* */
+
+
 /** ********** MTGOX CHANNEL ********** */
 const static char CH_TICKER[]	= "d5f06780-30a8-4a48-a2f8-7ed181b4a13f";
 const static char CH_TRADE[] 	= "dbf1dee9-4f2e-4a08-8cb7-748919a71b21";
@@ -70,11 +80,36 @@ int mtg_main(char *currency)
 
 	// Verbindung zur Mt.Gox Websocket API aufbauen und
 	// Socketfilediscriptor zurückgeben
-	//int sock = websocket_open(HOST, res, PORT);
-	int sock = 4;
+	int sock = websocket_open(HOST, res, PORT);
 
-	// Daten parsen
-	mtg_parse_data(sock);
+	// Thread Variabeln vorbereiten
+	pthread_t stream_th; // Thread um Mt.Gox Streamdaten zu lesen
+	TH_FIN = 0; // Thread soll laufen, bei 1 wird er beendet
+	TH_DATA = NULL; // Datenzeiger auf 0x0
+	TH_DATA_TYPE = -1; // Datentyp zunächst unbekannt
+
+	// Thread erzeugen, die Daten werden jetzt im Hintergrund gestreamt.
+	pthread_create(&stream_th, NULL, mtg_parse_data_stream_th, &sock);
+	//pthread_join(stream_th, NULL);
+
+	// Solange kein Abbruch erfolgt werden die gestreamten Daten
+	// formatiert ausgegeben.
+	while(!TH_FIN)
+	{
+		// Daten anhand ihres Typs ausgeben
+		switch(TH_DATA_TYPE)
+		{
+			case MTG_TYPE_TRADE:	mtg_print_trade((struct mtg_type_trade*)TH_DATA); break;	// Handelsdaten ausgeben
+			case MTG_TYPE_TICKER:	mtg_print_ticker((struct mtg_type_ticker*)TH_DATA); break;	// Livetickerdaten ausgeben
+			case MTG_TYPE_DEPTH:	mtg_print_depth((struct mtg_type_depth*)TH_DATA); break;	// Depthdaten ausgeben
+			default:		break;								// unbekannte Daten (nichts tun)
+		}
+		// Datentyp zurücksetzen
+		TH_DATA_TYPE = -1;
+
+		// Den Thread mitteilen das er weiter machen darf
+		pthread_cond_signal(&TH_COND);
+	}
 
 	// Socket schließen
 	websocket_close(sock);
@@ -84,17 +119,18 @@ int mtg_main(char *currency)
 }
 
 /**
- * Daten von Stream lesen und parsen
+ * Daten von Stream lesen und parsen. Diese Funktion
+ * muss in einem eigenen Thread laufen.
  *
- * @param[in] fd Socketdateidiscriptor
- * @return void
+ * @param[in] arg Zeiger auf Argument
+ * @return void Zeiger
  */
-void mtg_parse_data(int fd)
+void *mtg_parse_data_stream_th(void *arg)
 {
 	// Verbindung als Stream interpretieren
-	
-	//FILE *stream = fdopen(fd, "r");
-	FILE *stream = fopen("./Tests/mtgox.big.json", "r");
+	int fd = *((int*)arg); // Zeigerdaten zu Integer
+	FILE *stream = fdopen(fd, "r");
+	//FILE *stream = fopen("./Tests/mtgox.big.json", "r");
 	if(stream==NULL) Fatal
 	(
 		strerror(errno),
@@ -110,6 +146,13 @@ void mtg_parse_data(int fd)
 	size_t buffer_size = 0;
 	while((c=fgetc(stream))!=EOF)
 	{
+		// Schleife über Threadflag verlassen
+		if(TH_FIN)
+		{
+			pthread_cond_signal(&TH_COND); // ggf. Warten beenden
+			break;
+		}
+
 		buffer = realloc(buffer, ++buffer_size); // Der Puffer wächst dynamsich
 		(*(buffer+(buffer_size-1))) = c; // Puffer befüllen
 
@@ -121,13 +164,14 @@ void mtg_parse_data(int fd)
 			if(begin>=0)
 			{
 				// ##### VOLLSTÄNDIGEN BLOCK AUF DEM STACK ERZEUGEN UND SPEICHER FREI GEBEN #####
-				char block[strlen(&buffer[begin])];
+				char block[strlen(&buffer[begin])+1];
 				{
 					size_t len = sizeof(block)-sizeof(BLOCK_END);
 					memset(&block, 0x00, sizeof(block));
 					block[0] = '{'; // Block gültig beginnen
 					memcpy(&block[1], &buffer[begin], len);
-					block[len-1] = '}'; // Block gültig beenden
+					block[len+1] = '}'; // Block gültig beenden
+					block[len+2] = 0x00; // sauber abschließen
 					// Resets
 					memset(buffer, 0x00, buffer_size); // Sicherstellen das der alte Speicher sauber ist
 					free(buffer); // Puffer für Neubefüllung frei geben
@@ -137,16 +181,20 @@ void mtg_parse_data(int fd)
 
 				// Block zum verarbeiten weiter reichen
 				void *data = NULL; // Zeiger auf Datenstruktur
-				mtg_read_block(block, data); // Block verarbeiten und Datenstruktur füllen
+				TH_DATA_TYPE = mtg_read_block(block, data); // Block verarbeiten Datenstruktur füllen und Typ übergeben
+				TH_DATA = data; // Auf Daten zeigen
+				pthread_cond_wait(&TH_COND, &TH_MUTEX); // Warten bis wir weiter machen dürfen
 				free(data); // Datenstruktur im Speicher wieder frei geben
 			}
 		}
 	}
+	// Datenzeiger resetten
+	TH_DATA = NULL;
 
 	// Stream schließen, Heap frei geben & Rückkehr
 	fclose(stream);
 	free(buffer);
-	return;
+	return NULL;
 }
 
 /** Blocktype ermitteln
@@ -249,7 +297,7 @@ mtg_t mtg_read_block(char *block, void *data)
  */
 void mtg_read_block_trade(char *block, void *data)
 {
-	printf("Handelsblock: %s\n\n", block);
+	//printf("Handelsblock: %s\n\n", block);
 }
 
 /**
@@ -260,7 +308,7 @@ void mtg_read_block_trade(char *block, void *data)
  */
 void mtg_read_block_ticker(char *block, void *data)
 {
-	printf("Tickerblock: %s\n\n", block);
+	//printf("Tickerblock: %s\n\n", block);
 }
 
 /**
@@ -271,7 +319,49 @@ void mtg_read_block_ticker(char *block, void *data)
  */
 void mtg_read_block_depth(char *block, void *data)
 {
-	printf("Depthblock: %s\n\n", block);
+	//printf("Depthblock: %s\n\n", block);
+}
+
+/**
+ * Handeldaten formatiert ausgeben
+ *
+ * @param[in] tr Zeiger auf Handelstruktur
+ */
+void mtg_print_trade(struct mtg_type_trade *tr)
+{
+	printf("Tradingdaten\n");
+
+	// TODO: FREE ALL!!!
+	// Rückkehr
+	return;
+}
+
+/**
+ * Liveticker formatiert ausgeben
+ *
+ * @param[in] tk Zeiger auf Tickerstruktur
+ */
+void mtg_print_ticker(struct mtg_type_ticker *tk)
+{
+	printf("Tickerdaten\n");
+
+	// TODO: FREE ALL!!!
+	// Rückkehr
+	return;
+}
+
+/**
+ * Depthdaten formatiert ausgeben
+ *
+ * @param[in] dp Zeiger auf Depthstruktur
+ */
+void mtg_print_depth(struct mtg_type_depth *dp)
+{
+	printf("Depthdaten\n");
+
+	// TODO: FREE ALL!!!
+	// Rückkehr
+	return;
 }
 /** ********** /FUNKTIONEN ********* */
 

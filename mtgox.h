@@ -172,12 +172,13 @@ struct mtg_type_depth
 int mtg_main(char *currency);
 
 /**
- * Daten von Stream lesen und parsen
+ * Daten von Stream lesen und parsen. Diese Funktion
+ * muss in einem eigenen Thread laufen.
  *
- * @param[in] fd Socketdateidiscriptor
- * @return void
+ * @param[in] arg Zeiger auf Argument
+ * @return void Zeiger
  */
-void mtg_parse_data(int fd);
+void *mtg_parse_data_stream_th(void *arg);
 
 /**
  * Blocktype ermitteln
@@ -220,6 +221,27 @@ void mtg_read_block_ticker(char *block, void *data);
  * @param[in] data Zeiger für Datenstruktur
  */
 void mtg_read_block_depth(char *block, void *data);
+
+/**
+ * Handeldaten formatiert ausgeben
+ *
+ * @param[in] tr Zeiger auf Handelstruktur
+ */
+void mtg_print_trade(struct mtg_type_trade *tr);
+
+/**
+ * Liveticker formatiert ausgeben
+ *
+ * @param[in] tk Zeiger auf Tickerstruktur
+ */
+void mtg_print_ticker(struct mtg_type_ticker *tk);
+
+/**
+ * Depthdaten formatiert ausgeben
+ *
+ * @param[in] dp Zeiger auf Depthstruktur
+ */
+void mtg_print_depth(struct mtg_type_depth *dp);
 /** ********** /PROTOTYPEN ********* */
 
 #endif //_MTGOX_H
