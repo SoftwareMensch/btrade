@@ -1,6 +1,7 @@
 Dinge die nach Priorität implementiert werden sollten
 =====================================================
 
-- Rudimentäre Implementierung der Mt.Gox API via Websockets
+- Konkrete Mt.Gox API Implementierung
+- Rudimentäre blockchain.info API Implementierung
 - Rudimentäre Implementierung eines ncurses UI's
 
