@@ -109,6 +109,7 @@ int mtg_main(char *currency)
 
 		// Den Thread mitteilen das er weiter machen darf
 		pthread_cond_signal(&TH_COND);
+		usleep(1000*1000); // Delay von einer Sekunde
 	}
 
 	// Socket schließen
