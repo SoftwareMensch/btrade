@@ -29,10 +29,27 @@
 
 /** ********** DEFINITIONEN ********** */
 typedef s_int mtg_t;
+typedef s_int mtg_value_t;
+
+// Datentypen
 #define MTG_TYPE_VALUE	0x00
 #define MTG_TYPE_TRADE	0x01
 #define MTG_TYPE_TICKER	0x02
 #define MTG_TYPE_DEPTH	0x03
+
+// Valuetypen
+#define MTG_VALUE_TYPE_UNKNOWN		0x00
+#define MTG_VALUE_TYPE_AVG			0x01
+#define MTG_VALUE_TYPE_BUY			0x02
+#define MTG_VALUE_TYPE_HIGH			0x03
+#define MTG_VALUE_TYPE_LAST			0x04
+#define MTG_VALUE_TYPE_LASTALL		0x05
+#define MTG_VALUE_TYPE_LASTLOCAL	0x06
+#define MTG_VALUE_TYPE_LASTORIG		0x07
+#define MTG_VALUE_TYPE_LOW			0x08
+#define MTG_VALUE_TYPE_SELL			0x09
+#define MTG_VALUE_TYPE_VOL			0x0A
+#define MTG_VALUE_TYPE_VWAP			0x0B
 /** ********** /DEFINITIONEN ********* */
 
 
@@ -68,8 +85,10 @@ struct mtg_type_value
 {
 	char *currency;
 	char *display;
+	char *display_short;
 	char *value;
 	ul_int value_int;
+	mtg_value_t type;
 };
 
 /**
@@ -122,14 +141,15 @@ struct mtg_type_ticker
 {
 	struct mtg_type_value *avg;
 	struct mtg_type_value *buy;
-        struct mtg_type_value *high;
-        struct mtg_type_value *last;
-        struct mtg_type_value *last_local;
-        struct mtg_type_value *last_orig;
-        struct mtg_type_value *low;
-        struct mtg_type_value *sell;
-        struct mtg_type_value *vol;
-        struct mtg_type_value *vwap;
+	struct mtg_type_value *high;
+	struct mtg_type_value *last;
+	struct mtg_type_value *last_all;
+	struct mtg_type_value *last_local;
+	struct mtg_type_value *last_orig;
+	struct mtg_type_value *low;
+	struct mtg_type_value *sell;
+	struct mtg_type_value *vol;
+	struct mtg_type_value *vwap;
 };
 
 /**
@@ -172,6 +192,33 @@ struct mtg_type_depth
 int mtg_main(char *currency);
 
 /**
+ * Einen neuen Mt.Gox Valuetype erzeugen
+ *
+ * @param[in] currency Währungsart
+ * @param[in] display Anzeige für den Wert (lang)
+ * @param[in] display_short Anzeige für den Wert (kurz(
+ * @param[in] value Wert als String
+ * @param[in] value_int Wert als Integer
+ * @param[in] type Typ des Wertes
+ * @return Zeiger auf Mt.Gox Value
+ */
+struct mtg_type_value* mtg_new_value(char *currency, char *display, char *display_short, char *value, ul_int value_int, mtg_value_t type);
+
+/**
+ * Speicherbereich eines Mt.Gox Values frei geben
+ *
+ * @param[in] val Zeiger auf Datenstruktur
+ */
+void mtg_free_value(struct mtg_type_value *val);
+
+/**
+ * Speicherbereich einer Mt.Gox Tickerstruktur frei geben
+ *
+ * @param[in] tk Zeiger auf Struktur
+ */
+void mtg_free_ticker(struct mtg_type_ticker *tk);
+
+/**
  * Daten von Stream lesen und parsen. Diese Funktion
  * muss in einem eigenen Thread laufen.
  *
@@ -196,7 +243,7 @@ mtg_t mtg_get_block_type(char *block);
  * @param[in] Zeiger auf neue Datenstruktur
  * @return Mt.Gox Typ des Blocks
  */
-mtg_t mtg_read_block(char *block, void *data);
+mtg_t mtg_read_block(char *block, void **data);
 
 /**
  * Handelsblock lesen
@@ -204,7 +251,7 @@ mtg_t mtg_read_block(char *block, void *data);
  * @param[in] block JSON Blockstring
  * @param[in] data Zeiger für Datenstruktur
  */
-void mtg_read_block_trade(char *block, void *data);
+void mtg_read_block_trade(char *block, void **data);
 
 /**
  * Tickerblock lesen
@@ -212,7 +259,7 @@ void mtg_read_block_trade(char *block, void *data);
  * @param[in] block JSON Blockstring
  * @param[in] data Zeiger für Datenstruktur
  */
-void mtg_read_block_ticker(char *block, void *data);
+void mtg_read_block_ticker(char *block, void **data);
 
 /**
  * Depthblock lesen
@@ -220,7 +267,7 @@ void mtg_read_block_ticker(char *block, void *data);
  * @param[in] block JSON Blockstring
  * @param[in] data Zeiger für Datenstruktur
  */
-void mtg_read_block_depth(char *block, void *data);
+void mtg_read_block_depth(char *block, void **data);
 
 /**
  * Handeldaten formatiert ausgeben
